@@ -2,8 +2,6 @@
 import cv2
 import numpy as np
 
-
-
 # Read image
 img = cv2.imread('lena.jpg')
 
@@ -24,6 +22,9 @@ BLACK = [0,0,0]
 
 padded_img = cv2.copyMakeBorder(crop_img,y1,height-y2,x1,width-x2,cv2.BORDER_CONSTANT,value=BLACK)
 
+#Resize Image
+res = cv2.resize(crop_img,(width,height), interpolation = cv2.INTER_CUBIC)
+
 # Display images
 cv2.imshow("Output",img)
 cv2.imshow("Cropped",crop_img)
@@ -33,3 +34,4 @@ cv2.imshow("Padded",padded_img)
 # Save the images
 cv2.imwrite("cropped.jpg",crop_img)
 cv2.imwrite("padded.jpg",padded_img)
+cv2.imwrite("resized.jpg",res)
