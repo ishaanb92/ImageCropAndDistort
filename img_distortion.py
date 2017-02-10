@@ -1,37 +1,54 @@
 #!/usr/bin/python2.7
 import cv2
 import numpy as np
+import ConfigParser
+import sys
 
 # Read image
 img = cv2.imread('lena.jpg')
 
-# Crop takes [y1:y2,x1:x2]
+# Parse the config file
+parser = ConfigParser.ConfigParser()
+parser.read('config.ini')
 
-y1 = 200
-y2 = 300
+src_width,src_height,src_channels = img.shape
 
-x1 = 100
-x2 = 300
+# Crop takes [y_min:y_max,x_min:x_max]
 
-crop_img = img[y1:y2,x1:x2]
+y_min = parser.getint('Bounding Box Size','y_min')
+y_max = parser.getint('Bounding Box Size','y_max')
 
-# Add borders
-width,height = img.shape[:2]
+x_min = parser.getint('Bounding Box Size','x_min')
+x_max = parser.getint('Bounding Box Size','x_max')
 
-BLACK = [0,0,0]
+# Check bounding box limits
+if x_max > src_width or y_max > src_height or x_min < 0 or y_min < 0 :
+    print 'Invalid bounds on the crop'
+    sys.exit()
 
-padded_img = cv2.copyMakeBorder(crop_img,y1,height-y2,x1,width-x2,cv2.BORDER_CONSTANT,value=BLACK)
+crop_img = img[y_min:y_max,x_min:x_max]
 
-#Resize Image
-res = cv2.resize(crop_img,(width,height), interpolation = cv2.INTER_CUBIC)
+# Get output type
+output_type = parser.get('Output Type','type')
 
-# Display images
-cv2.imshow("Output",img)
-cv2.imshow("Cropped",crop_img)
-cv2.imshow("Padded",padded_img)
-#cv2.waitKey(0)
+# Get output image dimensions
+width = parser.getint('Target Image Size','width')
+height = parser.getint('Target Image Size','height')
 
-# Save the images
-cv2.imwrite("cropped.jpg",crop_img)
-cv2.imwrite("padded.jpg",padded_img)
-cv2.imwrite("resized.jpg",res)
+if output_type == 'crop':
+    output = crop_img
+elif output_type == 'padded':
+    BLACK = [0,0,0]
+    output = cv2.copyMakeBorder(crop_img,y_min,height-y_max,x_min,width-x_max,cv2.BORDER_CONSTANT,value=BLACK)
+elif output_type == 'resize':
+    output = cv2.resize(crop_img,(width,height), interpolation = cv2.INTER_CUBIC)
+else:
+    print "Type : %s is not recognized"%output_type
+    sys.exit()
+
+cv2.imwrite('output.jpg',output)
+
+
+
+
+
