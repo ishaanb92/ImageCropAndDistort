@@ -38,6 +38,9 @@ height = parser.getint('Target Image Size','height')
 if output_type == 'crop':
     output = crop_img
 elif output_type == 'padded':
+    if height < (y_max - y_min) or width < (x_max - x_min):
+        print 'Target image dimensions smaller than cropped image, padding is not possible'
+        sys.exit()
     BLACK = [0,0,0]
     output = cv2.copyMakeBorder(crop_img,y_min,height-y_max,x_min,width-x_max,cv2.BORDER_CONSTANT,value=BLACK)
 elif output_type == 'resize':
